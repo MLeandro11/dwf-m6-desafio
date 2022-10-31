@@ -1,5 +1,5 @@
-import * as admin from "firebase-admin"
 import * as serviceAccount from "./key.json"
+import * as admin from "firebase-admin"
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as any),
@@ -8,4 +8,4 @@ admin.initializeApp({
 
 const firestore = admin.firestore()
 const rtdb = admin.database()
-export { firestore, rtdb }
+export { firestore, rtdb}

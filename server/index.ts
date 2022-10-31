@@ -1,8 +1,9 @@
-import { firestore, rtdb } from './db'
+import { firestore, rtdb} from './db'
 import * as express from "express"
 import { nanoid } from 'nanoid'
 import * as cors from "cors"
 import * as path from "path"
+
 
 const port = process.env.PORT || 4000
 
@@ -29,34 +30,30 @@ router.post('/register', (req, res)=>{
 
 
 router.post("/playrooms", (req, res)=>{
-    
-    const {playerId} = req.body
-    console.log(playerId);
+    const {playerId,name} = req.body
+    //console.log(playerId);
     playersCollectionRef
     .doc(playerId.toString())
     .get()
     .then((doc)=>{
         if (doc.exists) {
-           const playroomRef = rtdb.ref("playrooms/" + nanoid())
-
+            const roomId = nanoid()
+           const playroomRef = rtdb.ref("playrooms/" + roomId + "/currentGame/" + playerId)
            playroomRef.set({
-            currentGame: [{
                 choice: "",
-                name:"",
-                online: true,
-                start: false
-            }],
-               //dueño
-               owner: playerId
-            }).then(()=>{
-                const roomLongId = playroomRef.key 
-                const roomid = 1000 + Math.floor(Math.random() * 999)
+                name:name,
+                history:{},
+                online: true,   
+                start: false,
+            },
+            ).then(()=>{
+                const roomIdShort = 1000 + Math.floor(Math.random() * 999)
             playroomsCollectionRef
-            .doc(roomid.toString()).set({
-                rtdbRoomId: roomLongId
+            .doc(roomIdShort.toString()).set({
+                rtdbRoomId: roomId
             }).then(()=>{
                 res.json({
-                    id: roomid.toString() 
+                    id: roomIdShort.toString() 
                 })
                 
             })
@@ -74,7 +71,6 @@ router.post("/playrooms", (req, res)=>{
 router.get("/playrooms/:roomId", (req, res)=>{
     const {playerId} = req.query
     const {roomId} = req.params
-
     playersCollectionRef
     .doc(playerId.toString())
     .get()
@@ -90,6 +86,28 @@ router.get("/playrooms/:roomId", (req, res)=>{
             })
         }
     } )
+})
+
+router.post("/playrooms/history/:roomId/:playerId", (req, res)=>{
+    const {playerId,roomId} = req.params 
+    const newResult = req.body
+    const playerRef = rtdb.ref("/playrooms/"+roomId+"/currentGame/"+playerId);
+    playerRef.child("history").push(newResult.result, ()=>{
+        res.json({message:"todo ok"})
+
+    });
+    
+})
+
+router.patch('/playrooms/games/:roomId/:playerId', (req, res)=>{
+    const {playerId,roomId} = req.params 
+    const changes = req.body
+    const playerRef = rtdb.ref("/playrooms/"+roomId+"/currentGame/"+playerId);
+    playerRef.update(changes, ()=>{
+        res.json({message:"todo ok"})
+
+    });
+    
 })
 
 

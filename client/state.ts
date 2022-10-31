@@ -1,21 +1,20 @@
-type Jugada =   'piedra' | 'papel' | 'tijera'
-
+import {rtdb} from "./db"
 const API_BASE_URL = "http://localhost:4000"
 const state = {
     data: {
         name:"",
         playerId:"",
+        opponentId:"",
         roomId:"",
         rtdbRoomId:"",
         currentGame:{
-            computerPlay: "",
-            myPlay: ""
+            playerOne:{},
+            playerTwo:{}
         },
-        history: []
       },
     listeners:[],
-    /* init(){
-        const playerData:any = localStorage.getItem('saved-id')
+    init(){
+        const playerData:any = localStorage.getItem('player-data')
         
         if (!playerData) {
             return
@@ -27,9 +26,41 @@ const state = {
             this.setState(cs)
             
         }
-    }, */
-    registerPlayer(name,callback){
-        const cs= this.getState()
+    },
+    listenDatabase() {
+        // Connection with RTDB
+        const {rtdbRoomId,playerId} = this.getState()
+        const rtdbRef = rtdb.ref("/playrooms/" + rtdbRoomId);
+        
+        rtdbRef.on("value", (snapshot) => {
+            const cs = this.getState();
+            /* if (snapshot.child("currentGame").numChildren() !== 2){
+                return console.log(snapshot.val());
+                
+            } */
+            snapshot.child("currentGame").forEach((childSnapshot)=> {
+                const key = childSnapshot.key;
+                const childData = childSnapshot.val();
+                if (key !== playerId) {
+                    cs.currentGame.playerTwo =childData
+                }
+                if (key == playerId) {
+                    cs.currentGame.playerOne = childData
+                }
+            });
+            this.setState(cs)
+        })
+    },
+      setData(data:{name:string,roomId?:number}){
+        console.log(data);
+        const currentState = this.getState()
+        currentState.name = data.name
+        currentState.roomId = data.roomId
+        this.setState(currentState)
+    },
+    registerPlayer(callback){
+        const cs = this.getState()
+        const {name} = cs
         fetch(API_BASE_URL+"/register",{
                 method: 'post',
                 headers: {
@@ -41,7 +72,6 @@ const state = {
             .then(res => res.json())
             .then(data => {
                 const id = data.id
-                cs.name = name
                 cs.playerId = id
                 this.setState(cs)
                 callback()
@@ -49,14 +79,14 @@ const state = {
     },
     askNewRoom(callback){
         const cs = this.getState()
-        const {playerId} = cs
+        const {playerId,name} = cs
         if (playerId) {
             fetch(API_BASE_URL+"/playrooms",{
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({playerId})
+                body: JSON.stringify({playerId,name})
                 
             }).then(res => res.json())
             .then(data => {
@@ -70,61 +100,78 @@ const state = {
             console.error("error al crear nuevo room")
         }
     },
-    accessToRoom(){
+    accessToRoom(callback){
         const cs = this.getState()
         const {playerId,roomId} = cs
         if (playerId && roomId) {
-            fetch(API_BASE_URL + `/playrooms/${roomId}?userId=${playerId}`,)
+            fetch(API_BASE_URL + `/playrooms/${roomId}?playerId=${playerId}`)
             .then(res => res.json())
             .then(data => {
                 //console.log(data);
                 const {rtdbRoomId} = data
                 cs.rtdbRoomId = rtdbRoomId
                 this.setState(cs)
+                this.listenDatabase()
+                callback()
             })
         }else{
             console.error("error al acceder al room")
         }
+    },
+    updateGame(data){
+        const cs = this.getState()
+        const {playerId, rtdbRoomId} = cs
+        fetch(API_BASE_URL + `/playrooms/games/${rtdbRoomId}/${playerId}` ,{
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+
+        })
     }, 
-    /* setMove(myMove: Jugada, computerMove){
+    /* setMove(myMove, computerMove){
         const cs = this.getState()
         cs.currentGame.myPlay = myMove
         cs.currentGame.computerPlay = computerMove
         //this.whoWins(myMove, computerMove)
         this.setState(cs)
-
-    },
-
+        
+    }, */
     
-    whoWins(myPlay:Jugada, computerPlay){
-
-        if (myPlay == computerPlay) {        
+    
+    whoWins(playerOne, playerTwo){
+        
+        if (playerOne == playerTwo) {        
             this.pushToHistory('empate')
             //console.log('empate');
-        } else if (myPlay == 'piedra' && computerPlay == 'tijera'){
+        } else if (playerOne == 'piedra' && playerTwo == 'tijera'){
             this.pushToHistory('ganaste')
             //console.log('ganaste');
-        } else if (myPlay == 'papel' && computerPlay == 'piedra'){
+        } else if (playerOne == 'papel' && playerTwo == 'piedra'){
             this.pushToHistory('ganaste')
             //console.log('ganaste');
-        }else if (myPlay == 'tijera' && computerPlay == 'papel'){
+        }else if (playerOne == 'tijera' && playerTwo == 'papel'){
             this.pushToHistory('ganaste')
             //console.log('ganaste');
         }else {
             this.pushToHistory('perdiste')
             //console.log('perdiste');
         }
-
     },
-
-            
+          
     pushToHistory(game){
-        //console.log(game);
-        
         const cs = this.getState()
-        cs.history.push(game)
-        this.setState(cs)
-    }, */
+        const {playerId, rtdbRoomId} = cs
+        fetch(API_BASE_URL + `/playrooms/history/${rtdbRoomId}/${playerId}` ,{
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({result:game})
+
+        })
+    },
 
     getState(){
         return this.data
@@ -136,7 +183,7 @@ const state = {
             
         }
         const {name, playerId} = newState
-        /* localStorage.setItem("saved-id", JSON.stringify({name,playerId})) */
+        localStorage.setItem("player-data", JSON.stringify({name,playerId}))
         console.log('Soy el state, he cambiado', this.data);
     },
     subscribe(callback){

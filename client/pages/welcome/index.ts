@@ -4,17 +4,26 @@ class HomePage extends HTMLElement{
     shadow: ShadowRoot
     connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'})
+        const cs = state.getState()
         this.render()
         const buttonStartEl = this.shadow.querySelector('.start')
         const buttonRoomtEl = this.shadow.querySelector('.room')
         buttonStartEl?.addEventListener('click', (e: any)=>{
-           Router.go('/start')
+            if (!cs.playerId) {
+                return Router.go('/new-game')
+            }
+            this.shadow.innerHTML = `
+            <p>Iniciando partida</p>
+            `
+            state.askNewRoom(()=>{
+                return state.accessToRoom(()=>{
+                Router.go('/start')
+            })
+            })
         })  
         buttonRoomtEl?.addEventListener('click', (e: any)=>{
-            Router.go('/start/room')
-         
-        })  
-        
+            Router.go('/room')
+        })
     }
     render(){
         this.shadow.innerHTML = `
@@ -22,7 +31,6 @@ class HomePage extends HTMLElement{
         <button class="start">Nuevo Juego</button>
         <button class="room">Ingresar a sala</button>
         `
-
         const style = document.createElement('style')
         style.innerHTML = ``
         this.shadow.appendChild(style)
