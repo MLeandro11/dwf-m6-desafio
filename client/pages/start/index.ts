@@ -6,13 +6,7 @@ class StartPage extends HTMLElement{
     room:Number
     shadow: ShadowRoot
     connectedCallback(){
-        state.subscribe(()=>{
-            const {currentGame} = state.getState()
-            
-            if (currentGame.playerOne.online && currentGame.playerTwo.online) {
-                return Router.go("/play")
-            }    
-        })
+        
         this.shadow = this.attachShadow({mode: 'open'})
         const cs = state.getState()
         if (!cs.rtdbRoomId) {
@@ -21,6 +15,12 @@ class StartPage extends HTMLElement{
         this.room = cs.roomId
         this.playerOne = cs.name
         this.render()
+        state.subscribe(()=>{
+            const {currentGame} = state.getState()
+            if (currentGame.playerOne.online && currentGame.playerTwo.online && !currentGame.playerOne.start) {
+                Router.go("/play")
+            }    
+        })
     }
     render(){
         this.shadow.innerHTML = `

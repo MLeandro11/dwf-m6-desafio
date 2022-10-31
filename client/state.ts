@@ -51,7 +51,7 @@ const state = {
             this.setState(cs)
         })
     },
-      setData(data:{name:string,roomId?:number}){
+    setData(data:{name:string,roomId?:number}){
         //console.log(data);
         const currentState = this.getState()
         currentState.name = data.name
@@ -130,16 +130,6 @@ const state = {
 
         })
     }, 
-    /* setMove(myMove, computerMove){
-        const cs = this.getState()
-        cs.currentGame.myPlay = myMove
-        cs.currentGame.computerPlay = computerMove
-        //this.whoWins(myMove, computerMove)
-        this.setState(cs)
-        
-    }, */
-    
-    
     whoWins(playerOne, playerTwo){
         
         if (playerOne == playerTwo) {        
@@ -184,7 +174,7 @@ const state = {
         }
         const {name, playerId} = newState
         localStorage.setItem("player-data", JSON.stringify({name,playerId}))
-        console.log('Soy el state, he cambiado', this.data);
+        //console.log('Soy el state, he cambiado', this.data);
     },
     subscribe(callback){
         this.listeners.push(callback)

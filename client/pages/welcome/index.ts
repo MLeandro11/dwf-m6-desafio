@@ -16,7 +16,7 @@ class HomePage extends HTMLElement{
             <p>Iniciando partida</p>
             `
             state.askNewRoom(()=>{
-                return state.accessToRoom(()=>{
+                state.accessToRoom(()=>{
                 Router.go('/start')
             })
             })
