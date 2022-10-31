@@ -52,7 +52,7 @@ const state = {
         })
     },
       setData(data:{name:string,roomId?:number}){
-        console.log(data);
+        //console.log(data);
         const currentState = this.getState()
         currentState.name = data.name
         currentState.roomId = data.roomId
@@ -61,7 +61,7 @@ const state = {
     registerPlayer(callback){
         const cs = this.getState()
         const {name} = cs
-        fetch(API_BASE_URL+"/register",{
+        fetch("/register",{
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ const state = {
         const cs = this.getState()
         const {playerId,name} = cs
         if (playerId) {
-            fetch(API_BASE_URL+"/playrooms",{
+            fetch("/playrooms",{
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json'
@@ -104,7 +104,7 @@ const state = {
         const cs = this.getState()
         const {playerId,roomId} = cs
         if (playerId && roomId) {
-            fetch(API_BASE_URL + `/playrooms/${roomId}?playerId=${playerId}`)
+            fetch(`/playrooms/${roomId}?playerId=${playerId}`)
             .then(res => res.json())
             .then(data => {
                 //console.log(data);
@@ -121,7 +121,7 @@ const state = {
     updateGame(data){
         const cs = this.getState()
         const {playerId, rtdbRoomId} = cs
-        fetch(API_BASE_URL + `/playrooms/games/${rtdbRoomId}/${playerId}` ,{
+        fetch(`/playrooms/games/${rtdbRoomId}/${playerId}` ,{
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -163,7 +163,7 @@ const state = {
     pushToHistory(game){
         const cs = this.getState()
         const {playerId, rtdbRoomId} = cs
-        fetch(API_BASE_URL + `/playrooms/history/${rtdbRoomId}/${playerId}` ,{
+        fetch(`/playrooms/history/${rtdbRoomId}/${playerId}` ,{
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
