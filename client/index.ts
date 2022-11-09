@@ -14,7 +14,6 @@ import './components/counter'
 import './components/my-move'
 import './components/results'
 import './components/text'
-import './components/text-field'
 import './components/loading'
 state.init()
 
