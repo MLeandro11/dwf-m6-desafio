@@ -8,13 +8,13 @@ class GamePage extends HTMLElement{
         if (!cs.rtdbRoomId) {
             Router.go("/")
         }
+        this.render()
         state.subscribe(()=>{
             const {currentGame} = state.getState()
-            if (currentGame.playerOne.choice && currentGame.playerTwo.choice) {
-                Router.go("/results")
-            } 
+                if (currentGame.playerOne.choice && currentGame.playerTwo.choice) {
+                    Router.go("/show-moves")
+            }
         })
-        this.render()
     }
         
     counter(){
@@ -24,11 +24,28 @@ class GamePage extends HTMLElement{
         if (counter < 0) {
             clearInterval(intervalId);
             this.shadow.innerHTML =`
+            <div class="container">
             <div class="cartel">
-                <p>¡Se agoto el tiempo!</p>
-                <button class="reset">¡reset!</button>
-                <button class="exit">Exit</button>
+            <my-text>¡Se agoto el tiempo!</my-text>
+            <my-button class="reset">¡reset!</my-button>
+            <my-button class="exit">Exit</my-button>
             </div>
+            </div>
+            
+            <style>
+            .container{
+                width: 375px;
+                margin: 0 auto;
+                height: 100vh;
+                overflow: hidden;
+                padding: 118px 0;
+            }
+            .cartel{
+                display: flex;
+                flex-direction: column;
+                gap: 40px
+            }
+            </style>
             `
             const buttonReset = this.shadow.querySelector('.reset')
             buttonReset?.addEventListener('click', e =>{
@@ -45,32 +62,95 @@ class GamePage extends HTMLElement{
         },1000)
     }
     addListeners(){
-        const piedra:any = this.shadow.querySelector('.piedra')
-        const papel:any = this.shadow.querySelector('.papel')
-        const tijera:any = this.shadow.querySelector('.tijera')
-        piedra?.addEventListener('click', (e: any)=>{
-            state.updateGame({choice: "piedra"})
-        })
-        papel?.addEventListener('click', (e: any)=>{
-            state.updateGame({choice: "papel"})
-        })
-        tijera?.addEventListener('click', (e: any)=>{
-            state.updateGame({choice: "tijera"})
-        })
+        const jugadas:any = this.shadow.querySelector('.hands')?.children
+        for (const iterator of jugadas) {
+        
+            iterator?.addEventListener('click', (e:any)=>{
+                state.updateGame({choice: e.target.move, start: false})
+                
+                this.shadow.innerHTML = `
+                <div class="container">
+                    <div class="hands">
+                        <div class="my-move">
+                            <my-move size="300" move="${e.target.move}"></my-move>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                .container{
+                    position: relative;
+                    width: 375px;
+                    margin: 0 auto;
+                    height: 100vh;
+                    overflow: hidden;
+                }
+                .hands  .my-move{
+                    position: absolute;
+                    left: 35%;
+                    bottom: 0;
+                }
+                </style>
+                `
+            })
+        }
     }
     render(){
         this.counter()
         this.shadow.innerHTML = `
-        <h1>Game</h1>
-        <div class="move">
-        <button class="piedra">piedra</button>
-        <button class="papel">papel</button>
-        <button class="tijera">tijera</button>
+        <div class="container">
+            <my-counter></my-counter>
+            <div class="hands">
+                <div class="move-uno">
+                    <my-move size="200" move="tijera"></my-move>
+                </div>
+                <div class="move-dos">
+                    <my-move size="200" move="piedra"></my-move>
+                </div>
+                <div class="move-tres">
+                    <my-move size="200" move="papel"></my-move>
+                </div>
+            </div>
         </div>
         `
 
         const style = document.createElement('style')
-        style.innerHTML = ``
+        style.innerHTML = `
+        .container{
+            position: relative;
+            width: 375px;
+            margin: 0 auto;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .hands .move-uno{
+            position: absolute;
+            left: 0;
+            bottom: -50px;
+        }
+    
+        .hands .move-dos{
+            position: absolute;
+            
+            right: 150px;
+            bottom: -50px;
+        }
+    
+        .hands .move-tres{
+            position: absolute;
+            right: 0;
+            bottom: -50px;
+        }
+        .hands .move-uno:hover{
+            bottom: 0
+        }
+        .hands .move-dos:hover{
+            bottom: 0
+        }
+        .hands .move-tres:hover{
+            bottom: 0
+        }
+        `
         this.shadow.appendChild(style)
         this.addListeners()
     }

@@ -1,38 +1,17 @@
-import {Router} from '@vaadin/router';
-import { state } from '../../state';
-class HomePage extends HTMLElement{
-    shadow: ShadowRoot
+class Loading extends HTMLElement{
+    shadow: ShadowRoot 
+    constructor(){
+        super()
+    }
     connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'})
-        const cs = state.getState()
         this.render()
-        const buttonStartEl = this.shadow.querySelector('.start')
-        const buttonRoomtEl = this.shadow.querySelector('.room')
-        buttonStartEl?.addEventListener('click', (e: any)=>{
-            if (!cs.playerId) {
-                return Router.go('/new-game')
-            }
-            this.shadow.innerHTML = `
-            <my-loading>Iniciando Partida...</my-loading>
-            `
-            state.askNewRoom(()=>{
-                state.accessToRoom(()=>{
-                Router.go('/start')
-            })
-            })
-        })  
-        buttonRoomtEl?.addEventListener('click', (e: any)=>{
-            Router.go('/room')
-        })
     }
     render(){
         this.shadow.innerHTML = `
         <div class="container">
         <h1 class="h1">Piedra Papel o Tijera</h1>
-        <div class="button">
-        <my-button class="start">Nuevo Juego</my-button>
-        <my-button class="room">Ingresar a sala</my-button>
-        </div>
+        <my-text size="45px" align="center">${this.textContent}</my-text>
         <div class="move-uno">
         <my-move move="tijera"></my-move>
         </div>
@@ -88,14 +67,4 @@ class HomePage extends HTMLElement{
         this.shadow.appendChild(style)
     }
 }
-customElements.define('my-home', HomePage)
-
-
-
-    
-     
-    
-    
-
-    
-    
+customElements.define('my-loading', Loading)

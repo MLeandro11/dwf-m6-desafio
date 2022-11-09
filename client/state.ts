@@ -1,10 +1,9 @@
 import {rtdb} from "./db"
-const API_BASE_URL = "http://localhost:4000"
+/* = "http://localhost:4000" */
 const state = {
     data: {
         name:"",
         playerId:"",
-        opponentId:"",
         roomId:"",
         rtdbRoomId:"",
         currentGame:{
@@ -32,13 +31,9 @@ const state = {
         const {rtdbRoomId,playerId} = this.getState()
         const rtdbRef = rtdb.ref("/playrooms/" + rtdbRoomId);
         
-        rtdbRef.on("value", (snapshot) => {
+        rtdbRef.child("currentGame").on("value", (snapshot) => { 
             const cs = this.getState();
-            /* if (snapshot.child("currentGame").numChildren() !== 2){
-                return console.log(snapshot.val());
-                
-            } */
-            snapshot.child("currentGame").forEach((childSnapshot)=> {
+            snapshot.forEach((childSnapshot)=> {
                 const key = childSnapshot.key;
                 const childData = childSnapshot.val();
                 if (key !== playerId) {
@@ -51,7 +46,7 @@ const state = {
             this.setState(cs)
         })
     },
-    setData(data:{name:string,roomId?:number}){
+    setData(data:{name:string,roomId?:string}){
         //console.log(data);
         const currentState = this.getState()
         currentState.name = data.name
@@ -174,7 +169,7 @@ const state = {
         }
         const {name, playerId} = newState
         localStorage.setItem("player-data", JSON.stringify({name,playerId}))
-        //console.log('Soy el state, he cambiado', this.data);
+        console.log('Soy el state, he cambiado', this.data);
     },
     subscribe(callback){
         this.listeners.push(callback)

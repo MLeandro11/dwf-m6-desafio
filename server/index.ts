@@ -47,7 +47,7 @@ router.post("/playrooms", (req, res)=>{
                 start: false,
             },
             ).then(()=>{
-                const roomIdShort = 1000 + Math.floor(Math.random() * 999)
+                const roomIdShort = nanoid(6).toLowerCase()
             playroomsCollectionRef
             .doc(roomIdShort.toString()).set({
                 rtdbRoomId: roomId
