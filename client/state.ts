@@ -1,5 +1,5 @@
 import {rtdb} from "./db"
-/* = "http://localhost:4000" */
+const API_BASE_URL = "http://localhost:4000"
 const state = {
     data: {
         name:"",
